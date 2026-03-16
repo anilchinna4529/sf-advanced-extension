@@ -1,0 +1,461 @@
+Below is a realistic architecture similar to tools like Salesforce Inspector and Salesforce Advanced Inspector, and conceptually comparable to FuseKit.
+This is how a professional Salesforce Chrome extension should be architected if you want it to scale and support multiple orgs, metadata exploration, SOQL generation, and AI tools.
+
+1. High-Level Architecture
+Browser (Chrome / Edge)
+        │
+        │
+Chrome Extension
+ ├── Popup UI
+ ├── Background Service Worker
+ ├── Content Scripts
+ ├── Local Storage Layer
+ └── API Layer
+        │
+        │
+Salesforce Platform
+ ├── REST API
+ ├── Tooling API
+ ├── Metadata API
+ └── OAuth Server
+
+The extension runs entirely in the browser, similar to Salesforce Inspector, and communicates directly with Salesforce APIs.
+
+2. Extension Component Architecture
+1️⃣ Popup Application
+
+This is the main UI panel of the extension.
+
+Functions:
+
+SOQL Builder
+
+Query Runner
+
+Metadata Explorer
+
+Data Loader
+
+AI Assistant
+
+Org Switcher
+
+Recommended stack:
+
+React
+TypeScript
+TailwindCSS
+
+Popup structure:
+
+popup/
+ ├ dashboard
+ ├ soql-builder
+ ├ metadata-explorer
+ ├ data-loader
+ ├ org-comparator
+ ├ ai-assistant
+2️⃣ Background Service Worker
+
+Runs in the background and manages:
+
+OAuth authentication
+
+token refresh
+
+Salesforce API requests
+
+multi-org sessions
+
+background/
+ ├ oauth-manager.js
+ ├ api-router.js
+ ├ org-session-manager.js
+
+Responsibilities:
+
+User login → OAuth
+Store access token
+Attach token to API requests
+Handle refresh tokens
+3️⃣ Content Scripts
+
+Injected into Salesforce pages.
+
+Purpose:
+
+detect object pages
+
+capture record IDs
+
+add extension buttons
+
+read metadata from the page
+
+Example:
+
+content_scripts/
+ ├ record-page-detector.js
+ ├ field-api-name-viewer.js
+ ├ page-enhancer.js
+
+Example feature:
+
+On Salesforce record page:
+
+Account Record Page
+Add button: "Open in SOQL Builder"
+3. Authentication Architecture
+
+Uses Salesforce OAuth 2.0.
+
+Flow:
+
+User clicks Login
+      │
+Redirect to Salesforce OAuth
+      │
+User approves access
+      │
+Salesforce returns access token
+      │
+Extension stores token
+
+Endpoints:
+
+/services/oauth2/authorize
+/services/oauth2/token
+
+Token storage:
+
+chrome.storage.local
+
+Org session format:
+
+{
+  orgId,
+  instanceUrl,
+  accessToken,
+  refreshToken,
+  userName
+}
+4. API Integration Layer
+
+A centralized service layer manages all Salesforce API calls.
+
+api/
+ ├ salesforce-client.ts
+ ├ metadata-service.ts
+ ├ query-service.ts
+ ├ tooling-service.ts
+ ├ bulk-service.ts
+
+Responsibilities:
+
+REST API
+
+Used for:
+
+SOQL queries
+sObject data
+record updates
+
+Example:
+
+GET /services/data/v60.0/query
+Metadata API
+
+Used for:
+
+objects
+fields
+relationships
+
+Example:
+
+GET /services/data/v60.0/sobjects
+Tooling API
+
+Used for:
+
+Apex classes
+debug logs
+metadata inspection
+5. Metadata Engine
+
+This is the core engine powering SOQL generation.
+
+It loads and caches metadata.
+
+metadata-engine/
+ ├ object-index.ts
+ ├ field-index.ts
+ ├ relationship-engine.ts
+
+Metadata structure stored locally:
+
+Object
+ ├ fields
+ ├ parentRelationships
+ └ childRelationships
+
+Example:
+
+Account
+ ├ fields
+ │   ├ Name
+ │   ├ Industry
+ │   └ OwnerId
+ └ childRelationships
+     ├ Contacts
+     └ Opportunities
+6. Relationship Engine
+
+Responsible for building correct SOQL relationships.
+
+Parent → Child
+Account → Contacts
+
+Generated query:
+
+SELECT Id,
+ (SELECT Id, LastName FROM Contacts)
+FROM Account
+Child → Parent
+Contact → Account
+
+Generated query:
+
+SELECT Id, Account.Name
+FROM Contact
+
+Algorithm:
+
+1 Load object metadata
+2 Parse childRelationships
+3 Parse reference fields
+4 Build relationship tree
+7. SOQL Autocomplete Engine
+
+Used in the query editor.
+
+Components:
+
+soql-engine/
+ ├ parser.ts
+ ├ autocomplete.ts
+ ├ query-builder.ts
+
+Autocomplete suggestions include:
+
+Objects
+Fields
+Relationships
+SOQL keywords
+
+Example typing:
+
+SELECT
+
+Suggestions:
+
+Id
+Name
+Industry
+OwnerId
+CreatedDate
+8. Visual SOQL Builder
+
+UI that builds queries visually.
+
+User selects:
+
+Object → Account
+Fields → Name, Industry
+Relationship → Contacts
+
+Generated query:
+
+SELECT Name, Industry,
+ (SELECT Id, LastName FROM Contacts)
+FROM Account
+
+Builder components:
+
+ObjectSelector
+FieldSelector
+RelationshipSelector
+FilterBuilder
+QueryPreview
+9. Query Runner
+
+Runs SOQL and displays results.
+
+API:
+
+GET /services/data/v60.0/query
+
+Result viewer:
+
+Table grid
+Pagination
+Column sorting
+Export CSV
+JSON view
+10. Data Loader Module
+
+Similar to Salesforce Data Loader.
+
+Capabilities:
+
+Insert
+Update
+Upsert
+Delete
+Bulk CSV import
+
+Implementation:
+
+Bulk API
+REST API
+11. Schema Graph Viewer
+
+Shows object relationships visually.
+
+Graph structure:
+
+Account
+ ├ Contacts
+ ├ Opportunities
+ └ Cases
+
+Recommended library:
+
+D3.js
+React Flow
+
+Clickable nodes generate queries.
+
+12. Org Comparator
+
+Compares metadata across two orgs.
+
+Comparison engine:
+
+org-compare/
+ ├ object-diff.ts
+ ├ field-diff.ts
+ ├ apex-diff.ts
+
+Example output:
+
+Sandbox vs Production
+
+New Field
+Account.New_Field__c
+
+Missing Apex
+OpportunityTrigger
+13. AI Assistant Module
+
+Uses an AI API.
+
+Capabilities:
+
+Generate SOQL
+Explain Apex errors
+Suggest queries
+Explain governor limits
+
+Example:
+
+User prompt:
+
+Accounts with contacts created this month
+
+AI generates:
+
+SELECT Id, Name,
+ (SELECT Id, LastName FROM Contacts
+  WHERE CreatedDate = THIS_MONTH)
+FROM Account
+14. Apex Debug Helper
+
+User pastes error:
+
+System.NullPointerException
+
+System:
+
+Analyzes stack trace
+Explains issue
+Suggests fixes
+15. Package.xml Generator
+
+Reads metadata and generates deployment manifest.
+
+Example output:
+
+<types>
+<members>Account</members>
+<name>CustomObject</name>
+</types>
+16. Folder Structure
+salesforce-dev-extension/
+
+manifest.json
+
+background/
+ oauth-manager.ts
+ api-router.ts
+
+content/
+ record-detector.ts
+ field-viewer.ts
+
+popup/
+ App.tsx
+ Dashboard.tsx
+
+modules/
+ soql-builder/
+ metadata-explorer/
+ data-loader/
+ org-comparator/
+
+engines/
+ metadata-engine/
+ relationship-engine/
+ soql-engine/
+
+api/
+ salesforce-client.ts
+
+utils/
+ cache.ts
+ storage.ts
+17. Development Roadmap
+Phase 1 (Core)
+OAuth login
+Multi-org support
+Metadata explorer
+SOQL query runner
+Phase 2
+SOQL autocomplete
+Relationship engine
+Visual query builder
+Phase 3
+Schema graph viewer
+Data loader
+Package.xml generator
+Phase 4
+AI assistant
+Apex debug helper
+Org comparator
+Final Result
+
+You will have a professional Salesforce developer extension comparable to:
+
+Salesforce Inspector
+
+Salesforce Advanced Inspector

@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salesforce Dev Toolkit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="app-header">
+      <div class="header-left">
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#0070d2" />
+                <stop offset="100%" stop-color="#7b2ff7" />
+              </linearGradient>
+            </defs>
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="url(#logoGrad)" />
+          </svg>
+          <span class="logo-text">SF Dev Toolkit</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="org-switcher" id="org-switcher">
+          <div class="org-badge" id="org-badge" title="Click to switch org">
+            <span class="org-indicator" id="org-indicator"></span>
+            <span id="org-name">No Org Connected</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+          </div>
+          <div class="org-dropdown" id="org-dropdown">
+            <div id="org-list"></div>
+            <div class="org-dropdown-actions">
+              <button class="btn btn-sm btn-primary" id="btn-connect-tab"
+                title="Grab session from an open Salesforce tab">
+                <span>🔗</span> Connect from Tab
+              </button>
+              <button class="btn btn-sm btn-secondary" id="btn-quick-connect"
+                title="Paste Access Token &amp; Instance URL">
+                <span>⚡</span> Quick Connect
+              </button>
+              <button class="btn btn-sm btn-ghost" id="btn-login-prod" title="Requires Connected App">
+                <span>🏢</span> OAuth: Production
+              </button>
+              <button class="btn btn-sm btn-ghost" id="btn-login-sandbox" title="Requires Connected App">
+                <span>🧪</span> OAuth: Sandbox
+              </button>
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn" id="btn-settings" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav id="main-nav">
+      <button class="nav-tab active" data-tab="dashboard" title="Dashboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-tab" data-tab="soql-builder" title="SOQL Builder">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </svg>
+        <span>SOQL</span>
+      </button>
+      <button class="nav-tab" data-tab="metadata-explorer" title="Metadata Explorer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+        </svg>
+        <span>Metadata</span>
+      </button>
+      <button class="nav-tab" data-tab="query-runner" title="Query Runner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+        <span>Runner</span>
+      </button>
+      <button class="nav-tab" data-tab="data-loader" title="Data Loader">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <span>Data</span>
+      </button>
+      <button class="nav-tab" data-tab="schema-viewer" title="Schema Viewer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+        </svg>
+        <span>Schema</span>
+      </button>
+      <button class="nav-tab" data-tab="org-comparator" title="Org Compare">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        <span>Compare</span>
+      </button>
+      <button class="nav-tab" data-tab="ai-assistant" title="AI Assistant">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a4 4 0 014 4v2h2a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2v-8a2 2 0 012-2h2V6a4 4 0 014-4z" />
+          <circle cx="9" cy="14" r="1" fill="currentColor" />
+          <circle cx="15" cy="14" r="1" fill="currentColor" />
+        </svg>
+        <span>AI</span>
+      </button>
+      <button class="nav-tab" data-tab="apex-debug" title="Apex Debug">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <span>Debug</span>
+      </button>
+      <button class="nav-tab" data-tab="package-xml" title="Package.xml">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        <span>Package</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="main-content">
+      <!-- Dashboard Tab -->
+      <div class="tab-panel active" id="panel-dashboard">
+        <div class="panel-content dashboard-grid">
+          <div class="dash-welcome">
+            <h2>Welcome to Salesforce Dev Toolkit</h2>
+            <p class="text-muted">Connect your Salesforce org to get started</p>
+          </div>
+
+          <div class="dash-stats" id="dash-stats">
+            <div class="stat-card">
+              <div class="stat-icon">🏢</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-orgs">0</span>
+                <span class="stat-label">Connected Orgs</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">📊</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-objects">-</span>
+                <span class="stat-label">Objects</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔍</div>
+              <div class="stat-info">
+                <span class="stat-value" id="stat-queries">0</span>
+                <span class="stat-label">Queries Run</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="quick-actions-grid">
+              <button class="quick-action-btn" data-navigate="soql-builder">
+                <span class="qa-icon">🔍</span>
+                <span class="qa-label">New Query</span>
+              </button>
+              <button class="quick-action-btn" data-navigate="metadata-explorer">
+                <span class="qa-icon">📦</span>
+                <span class="qa-label">Explore Metadata</span>
+              </button>
+              <button class="quick-action-btn" data-navigate="data-loader">
+                <span class="qa-icon">📤</span>
+                <span class="qa-label">Import Data</span>
+              </button>
+              <button class="quick-action-btn" data-navigate="ai-assistant">
+                <span class="qa-icon">🤖</span>
+                <span class="qa-label">AI Assistant</span>
+              </button>
+              <button class="quick-action-btn" data-navigate="schema-viewer">
+                <span class="qa-icon">🌐</span>
+                <span class="qa-label">Schema Graph</span>
+              </button>
+              <button class="quick-action-btn" data-navigate="org-comparator">
+                <span class="qa-icon">⚖️</span>
+                <span class="qa-label">Compare Orgs</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="dash-recent" id="dash-recent">
+            <h3>Recent Queries</h3>
+            <div id="recent-queries-list" class="recent-list">
+              <div class="empty-state-sm">No recent queries</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOQL Builder Tab -->
+      <div class="tab-panel" id="panel-soql-builder">
+        <div class="panel-content">
+          <div class="builder-section">
+            <h3>Visual SOQL Builder</h3>
+            <div class="builder-row">
+              <div class="builder-field">
+                <label>Object</label>
+                <div class="search-select">
+                  <input type="text" id="soql-object-search" placeholder="Search objects..." autocomplete="off">
+                  <div class="search-dropdown" id="soql-object-dropdown"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="builder-row" id="soql-fields-section" style="display:none">
+              <div class="builder-field">
+                <label>Fields <span class="badge" id="field-count">0</span></label>
+                <div class="field-selector">
+                  <input type="text" id="soql-field-search" placeholder="Search fields...">
+                  <div class="field-chips" id="selected-fields"></div>
+                  <div class="field-list" id="available-fields"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="builder-row" id="soql-relationships-section" style="display:none">
+              <div class="builder-field">
+                <label>Relationships</label>
+                <div class="relationship-list" id="relationship-list"></div>
+              </div>
+            </div>
+
+            <div class="builder-row" id="soql-filters-section" style="display:none">
+              <div class="builder-field">
+                <label>Filters</label>
+                <div id="filter-rows"></div>
+                <button class="btn btn-sm btn-ghost" id="btn-add-filter">+ Add Filter</button>
+              </div>
+            </div>
+
+            <div class="builder-row" id="soql-options-section" style="display:none">
+              <div class="builder-options">
+                <div class="option-group">
+                  <label>ORDER BY</label>
+                  <select id="soql-orderby"></select>
+                  <select id="soql-order-dir">
+                    <option value="ASC">ASC</option>
+                    <option value="DESC">DESC</option>
+                  </select>
+                </div>
+                <div class="option-group">
+                  <label>LIMIT</label>
+                  <input type="number" id="soql-limit" value="200" min="1" max="50000">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="query-preview-section">
+            <div class="query-preview-header">
+              <h4>Generated Query</h4>
+              <div class="query-actions">
+                <button class="btn btn-sm btn-ghost" id="btn-copy-query" title="Copy">📋 Copy</button>
+                <button class="btn btn-sm btn-primary" id="btn-run-builder-query" title="Run">▶ Run</button>
+              </div>
+            </div>
+            <pre class="query-preview" id="query-preview"><code>SELECT Id FROM ...</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadata Explorer Tab -->
+      <div class="tab-panel" id="panel-metadata-explorer">
+        <div class="panel-content">
+          <div class="explorer-header">
+            <input type="text" id="metadata-search" placeholder="🔍 Search objects..." class="search-input">
+            <button class="btn btn-sm btn-ghost" id="btn-refresh-metadata">🔄 Refresh</button>
+          </div>
+          <div class="explorer-layout">
+            <div class="explorer-sidebar" id="object-list">
+              <div class="loading-state">Loading objects...</div>
+            </div>
+            <div class="explorer-main" id="object-detail">
+              <div class="empty-state">
+                <span class="empty-icon">📦</span>
+                <p>Select an object to view its metadata</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Query Runner Tab -->
+      <div class="tab-panel" id="panel-query-runner">
+        <div class="panel-content">
+          <div class="runner-editor">
+            <div class="editor-header">
+              <span>SOQL Editor</span>
+              <div class="editor-actions">
+                <button class="btn btn-sm btn-ghost" id="btn-format-query">Format</button>
+                <button class="btn btn-sm btn-ghost" id="btn-query-history">History</button>
+                <button class="btn btn-sm btn-primary" id="btn-execute-query">▶ Execute</button>
+              </div>
+            </div>
+            <div class="editor-wrapper">
+              <textarea id="soql-editor" placeholder="SELECT Id, Name FROM Account LIMIT 10"
+                spellcheck="false"></textarea>
+              <div class="autocomplete-dropdown" id="autocomplete-dropdown"></div>
+            </div>
+          </div>
+          <div class="runner-results" id="runner-results">
+            <div class="results-header" id="results-header" style="display:none">
+              <div class="results-info">
+                <span id="results-count">0 records</span>
+                <span id="results-time" class="text-muted"></span>
+              </div>
+              <div class="results-actions">
+                <button class="btn btn-sm btn-ghost" id="btn-view-table" title="Table View">📊</button>
+                <button class="btn btn-sm btn-ghost" id="btn-view-json" title="JSON View">{ }</button>
+                <button class="btn btn-sm btn-ghost" id="btn-export-csv" title="Export CSV">📥 CSV</button>
+                <button class="btn btn-sm btn-ghost" id="btn-copy-json" title="Copy JSON">📋 JSON</button>
+              </div>
+            </div>
+            <div class="results-body" id="results-body">
+              <div class="empty-state">
+                <span class="empty-icon">▶️</span>
+                <p>Run a query to see results</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Loader Tab -->
+      <div class="tab-panel" id="panel-data-loader">
+        <div class="panel-content">
+          <div class="loader-header">
+            <h3>Data Loader</h3>
+          </div>
+          <div class="loader-options">
+            <div class="loader-operation-grid">
+              <label class="operation-card">
+                <input type="radio" name="loader-op" value="insert" checked>
+                <div class="operation-content">
+                  <span class="op-icon">➕</span>
+                  <span class="op-label">Insert</span>
+                </div>
+              </label>
+              <label class="operation-card">
+                <input type="radio" name="loader-op" value="update">
+                <div class="operation-content">
+                  <span class="op-icon">✏️</span>
+                  <span class="op-label">Update</span>
+                </div>
+              </label>
+              <label class="operation-card">
+                <input type="radio" name="loader-op" value="upsert">
+                <div class="operation-content">
+                  <span class="op-icon">🔄</span>
+                  <span class="op-label">Upsert</span>
+                </div>
+              </label>
+              <label class="operation-card">
+                <input type="radio" name="loader-op" value="delete">
+                <div class="operation-content">
+                  <span class="op-icon">🗑️</span>
+                  <span class="op-label">Delete</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="loader-config">
+            <div class="builder-row">
+              <div class="builder-field">
+                <label>Object</label>
+                <input type="text" id="loader-object-search" placeholder="Search objects..." autocomplete="off">
+                <div class="search-dropdown" id="loader-object-dropdown"></div>
+              </div>
+            </div>
+            <div id="loader-upsert-field" style="display:none">
+              <div class="builder-field">
+                <label>External ID Field</label>
+                <select id="loader-external-id"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="loader-upload">
+            <div class="file-drop-zone" id="file-drop-zone">
+              <span class="drop-icon">📄</span>
+              <p>Drop CSV file here or <button class="btn-link" id="btn-browse-file">browse</button></p>
+              <input type="file" id="csv-file-input" accept=".csv" style="display:none">
+              <p class="text-muted text-sm">Supports CSV format</p>
+            </div>
+            <div id="csv-preview" style="display:none">
+              <div class="csv-preview-header">
+                <span id="csv-filename"></span>
+                <span id="csv-row-count" class="badge"></span>
+                <button class="btn btn-sm btn-ghost" id="btn-clear-csv">✕ Clear</button>
+              </div>
+              <div id="csv-preview-table" class="table-container"></div>
+            </div>
+          </div>
+
+          <div class="loader-actions">
+            <button class="btn btn-primary btn-lg" id="btn-start-load" disabled>
+              🚀 Start Load
+            </button>
+          </div>
+
+          <div id="loader-progress" style="display:none">
+            <div class="progress-bar">
+              <div class="progress-fill" id="loader-progress-fill"></div>
+            </div>
+            <div class="progress-info">
+              <span id="loader-progress-text">Processing...</span>
+              <span id="loader-progress-count"></span>
+            </div>
+          </div>
+
+          <div id="loader-results" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Schema Viewer Tab -->
+      <div class="tab-panel" id="panel-schema-viewer">
+        <div class="panel-content">
+          <div class="schema-controls">
+            <input type="text" id="schema-search" placeholder="🔍 Search object..." class="search-input">
+            <button class="btn btn-sm btn-primary" id="btn-load-schema">Load Schema</button>
+            <button class="btn btn-sm btn-ghost" id="btn-reset-schema">Reset View</button>
+          </div>
+          <div class="schema-canvas" id="schema-canvas">
+            <div class="empty-state">
+              <span class="empty-icon">🌐</span>
+              <p>Search for an object to view its relationship graph</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Org Comparator Tab -->
+      <div class="tab-panel" id="panel-org-comparator">
+        <div class="panel-content">
+          <div class="comparator-header">
+            <h3>Org Comparator</h3>
+            <p class="text-muted">Compare metadata between two connected orgs</p>
+          </div>
+          <div class="comparator-orgs">
+            <div class="comparator-org">
+              <label>Source Org</label>
+              <select id="compare-org-1" class="select-input">
+                <option value="">Select Org...</option>
+              </select>
+            </div>
+            <div class="comparator-vs">VS</div>
+            <div class="comparator-org">
+              <label>Target Org</label>
+              <select id="compare-org-2" class="select-input">
+                <option value="">Select Org...</option>
+              </select>
+            </div>
+          </div>
+          <div class="comparator-options">
+            <label class="checkbox-label"><input type="checkbox" id="compare-objects" checked> Objects</label>
+            <label class="checkbox-label"><input type="checkbox" id="compare-fields" checked> Fields</label>
+            <label class="checkbox-label"><input type="checkbox" id="compare-apex"> Apex Classes</label>
+            <label class="checkbox-label"><input type="checkbox" id="compare-profiles"> Profiles</label>
+          </div>
+          <button class="btn btn-primary" id="btn-compare-orgs" disabled>🔍 Compare</button>
+          <div id="compare-results" class="compare-results"></div>
+        </div>
+      </div>
+
+      <!-- AI Assistant Tab -->
+      <div class="tab-panel" id="panel-ai-assistant">
+        <div class="panel-content ai-layout">
+          <div class="ai-chat" id="ai-chat">
+            <div class="ai-messages" id="ai-messages">
+              <div class="ai-message ai-bot">
+                <div class="ai-avatar">🤖</div>
+                <div class="ai-bubble">
+                  <p>Hi! I'm your Salesforce AI Assistant. I can help you:</p>
+                  <ul>
+                    <li>Generate SOQL queries from natural language</li>
+                    <li>Explain Apex errors and suggest fixes</li>
+                    <li>Help with governor limits</li>
+                    <li>Suggest query optimizations</li>
+                  </ul>
+                  <p>Try: <em>"Show accounts with contacts created this month"</em></p>
+                </div>
+              </div>
+            </div>
+            <div class="ai-input-area">
+              <textarea id="ai-input" placeholder="Ask me anything about Salesforce..." rows="2"></textarea>
+              <button class="btn btn-primary" id="btn-ai-send">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Apex Debug Tab -->
+      <div class="tab-panel" id="panel-apex-debug">
+        <div class="panel-content">
+          <div class="debug-header">
+            <h3>Apex Debug Helper</h3>
+            <p class="text-muted">Paste your Apex error or stack trace for analysis</p>
+          </div>
+          <div class="debug-input">
+            <textarea id="apex-error-input"
+              placeholder="Paste your Apex error here...&#10;&#10;Example:&#10;System.NullPointerException: Attempt to de-reference a null object&#10;Class.MyController.handleSave: line 42, column 1"
+              rows="6" spellcheck="false"></textarea>
+            <button class="btn btn-primary" id="btn-analyze-error">🔍 Analyze Error</button>
+          </div>
+          <div id="debug-results"></div>
+
+          <div class="debug-logs-section">
+            <h4>Recent Debug Logs</h4>
+            <button class="btn btn-sm btn-ghost" id="btn-fetch-logs">🔄 Fetch Logs</button>
+            <div id="debug-logs-list" class="debug-logs-list">
+              <div class="empty-state-sm">Click "Fetch Logs" to load recent debug logs</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Package.xml Tab -->
+      <div class="tab-panel" id="panel-package-xml">
+        <div class="panel-content">
+          <div class="package-header">
+            <h3>Package.xml Generator</h3>
+            <p class="text-muted">Select metadata types to generate a deployment manifest</p>
+          </div>
+          <div class="package-layout">
+            <div class="package-types">
+              <h4>Metadata Types</h4>
+              <div class="package-type-list" id="package-type-list">
+                <label class="checkbox-label"><input type="checkbox" data-type="ApexClass"> Apex Classes</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="ApexTrigger"> Apex Triggers</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="CustomObject"> Custom Objects</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="CustomField"> Custom Fields</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="Layout"> Page Layouts</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="Profile"> Profiles</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="PermissionSet"> Permission Sets</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="Flow"> Flows</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="LightningComponentBundle"> Lightning Web
+                  Components</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="AuraDefinitionBundle"> Aura
+                  Components</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="ApexPage"> Visualforce Pages</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="ApexComponent"> Visualforce
+                  Components</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="StaticResource"> Static
+                  Resources</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="ValidationRule"> Validation
+                  Rules</label>
+                <label class="checkbox-label"><input type="checkbox" data-type="WorkflowRule"> Workflow Rules</label>
+              </div>
+              <div class="package-actions">
+                <button class="btn btn-sm btn-ghost" id="btn-select-all-types">Select All</button>
+                <button class="btn btn-sm btn-ghost" id="btn-clear-all-types">Clear All</button>
+              </div>
+            </div>
+            <div class="package-members" id="package-members" style="display:none">
+              <h4>Members <span class="badge" id="member-count">0</span></h4>
+              <div id="package-member-list"></div>
+            </div>
+          </div>
+          <div class="package-preview">
+            <div class="package-preview-header">
+              <h4>Generated package.xml</h4>
+              <div>
+                <button class="btn btn-sm btn-ghost" id="btn-copy-package">📋 Copy</button>
+                <button class="btn btn-sm btn-ghost" id="btn-download-package">📥 Download</button>
+              </div>
+            </div>
+            <pre class="code-block" id="package-xml-output">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Package xmlns="http://soap.sforce.com/2006/04/metadata"&gt;
+  &lt;!-- Select metadata types above --&gt;
+  &lt;version&gt;60.0&lt;/version&gt;
+&lt;/Package&gt;</pre>
+          </div>
+          <button class="btn btn-primary" id="btn-generate-package">⚡ Generate Package.xml</button>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>Settings</h3>
+            <button class="modal-close" id="btn-close-settings">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="setting-group">
+              <label>API Version</label>
+              <select id="setting-api-version" class="select-input">
+                <option value="v62.0">v62.0 (Spring '25) — Latest</option>
+                <option value="v61.0">v61.0 (Winter '25)</option>
+                <option value="v60.0">v60.0 (Spring '24)</option>
+                <option value="v59.0">v59.0 (Winter '24)</option>
+                <option value="v58.0">v58.0 (Summer '23)</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <label>OpenAI API Key</label>
+              <input type="password" id="setting-openai-key" placeholder="sk-..." class="text-input">
+              <p class="text-muted text-sm">Required for AI Assistant features</p>
+            </div>
+            <div class="setting-group">
+              <label>Connected App Client ID</label>
+              <input type="text" id="setting-client-id" placeholder="3MVG9..." class="text-input">
+              <p class="text-muted text-sm">Your Salesforce Connected App consumer key</p>
+            </div>
+            <div class="setting-group">
+              <label>Cache Duration</label>
+              <select id="setting-cache-ttl" class="select-input">
+                <option value="1800000">30 minutes</option>
+                <option value="3600000">1 hour</option>
+                <option value="7200000">2 hours</option>
+                <option value="86400000">24 hours</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" id="btn-cancel-settings">Cancel</button>
+            <button class="btn btn-primary" id="btn-save-settings">Save Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Connect Modal -->
+      <div class="modal-overlay" id="quick-connect-modal">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>⚡ Quick Connect</h3>
+            <button class="modal-close" id="btn-close-quick-connect">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="setting-group">
+              <label>Instance URL</label>
+              <input type="text" id="qc-instance-url" placeholder="https://yourorg.my.salesforce.com"
+                class="text-input">
+              <p class="text-muted text-sm">Your Salesforce org URL</p>
+            </div>
+            <div class="setting-group">
+              <label>Access Token / Session ID</label>
+              <textarea id="qc-access-token" placeholder="Paste your access token here..." rows="3"
+                style="width:100%;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;resize:vertical;outline:none"></textarea>
+              <p class="text-muted text-sm">Get this from: Developer Console → Debug → Open Execute Anonymous → <code
+                  style="background:var(--bg-primary);padding:1px 4px;border-radius:3px;font-size:10px">System.debug(UserInfo.getSessionId());</code>
+              </p>
+            </div>
+            <div class="setting-group">
+              <label>Org Type</label>
+              <select id="qc-org-type" class="select-input">
+                <option value="Production">Production</option>
+                <option value="Sandbox">Sandbox</option>
+                <option value="Developer">Developer Edition</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-ghost" id="btn-cancel-quick-connect">Cancel</button>
+            <button class="btn btn-primary" id="btn-submit-quick-connect">🔗 Connect</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Status Bar -->
+    <footer id="status-bar">
+      <span id="status-text">Ready</span>
+      <span id="status-version">v1.0.0</span>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../utils/storage.js"></script>
+  <script src="../utils/cache.js"></script>
+  <script src="../api/salesforce-client.js"></script>
+  <script src="../modules/auth/auth.js"></script>
+  <script src="../modules/org-manager/org-manager.js"></script>
+  <script src="../modules/metadata-explorer/metadata-explorer.js"></script>
+  <script src="../modules/soql-builder/soql-builder.js"></script>
+  <script src="../modules/query-runner/query-runner.js"></script>
+  <script src="../modules/data-loader/data-loader.js"></script>
+  <script src="../modules/schema-viewer/schema-viewer.js"></script>
+  <script src="../modules/org-comparator/org-comparator.js"></script>
+  <script src="../modules/ai-assistant/ai-assistant.js"></script>
+  <script src="../modules/apex-debug/apex-debug.js"></script>
+  <script src="../modules/package-xml/package-xml.js"></script>
+  <script src="popup.js"></script>
+</body>
+
+</html>

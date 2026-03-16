@@ -1,0 +1,412 @@
+Below is a **powerful master prompt** you can give to an AI coding agent (like Claude, ChatGPT, or GitHub Copilot) to **generate a full Chrome/Edge extension architecture** similar to tools like Salesforce Inspector and FuseKit.
+
+This prompt is written so the AI will produce:
+
+* system architecture
+* folder structure
+* APIs
+* UI design
+* core algorithms
+* implementation roadmap
+
+---
+
+# Powerful Master Prompt for Building a Salesforce Developer Chrome Extension
+
+You are a senior software architect and Salesforce platform expert.
+
+Design and generate the complete architecture, system design, and development roadmap for a professional Chrome/Edge browser extension that acts as an advanced Salesforce developer toolkit similar to Salesforce Inspector and FuseKit.
+
+The extension must be designed for Salesforce developers and admins and should significantly improve productivity when working with Salesforce data, metadata, SOQL queries, debugging, and multi-org management.
+
+The system must follow Chrome Extension Manifest V3 architecture and be built using modern scalable technologies.
+
+---
+
+PRIMARY OBJECTIVE
+
+Build a powerful Salesforce Developer Chrome Extension that supports:
+
+• Multi-org Salesforce connections
+• Visual SOQL query builder
+• Relationship-aware query generation
+• Metadata explorer
+• Data loader and bulk data editor
+• Schema graph viewer
+• Apex debug assistant
+• Org comparison tools
+• AI-powered query generator
+• Package.xml generator
+
+The extension must work with both Chrome and Edge browsers.
+
+---
+
+AUTHENTICATION & SECURITY
+
+Implement Salesforce OAuth authentication.
+
+Requirements:
+
+1. Use OAuth 2.0 authentication with Salesforce
+2. Allow login to multiple Salesforce orgs (production, sandbox, developer orgs)
+3. Store access tokens securely using Chrome extension storage APIs
+4. Handle token refresh automatically
+5. Allow users to switch orgs easily
+6. Support login to multiple Salesforce domains
+
+OAuth endpoints:
+
+/services/oauth2/authorize
+/services/oauth2/token
+
+---
+
+CORE MODULES
+
+Design the extension with the following modules:
+
+1. ORG MANAGER
+2. METADATA EXPLORER
+3. VISUAL SOQL BUILDER
+4. QUERY RUNNER
+5. DATA LOADER
+6. ORG COMPARATOR
+7. PACKAGE XML GENERATOR
+8. SCHEMA GRAPH VIEWER
+9. AI QUERY GENERATOR
+10. APEX DEBUG HELPER
+
+---
+
+MODULE 1 — ORG MANAGER
+
+Features:
+
+• Connect multiple Salesforce orgs
+• Display list of connected orgs
+• Switch between orgs instantly
+• Show org type (sandbox / production)
+• Show current user and org ID
+• Store connection metadata
+
+---
+
+MODULE 2 — METADATA EXPLORER
+
+Fetch Salesforce metadata using REST APIs.
+
+Endpoint example:
+
+/services/data/vXX.X/sobjects
+
+Must retrieve:
+
+• Objects
+• Fields
+• Relationships
+• Child relationships
+• Field types
+• Picklist values
+
+Capabilities:
+
+• Browse objects
+• Search objects
+• View fields
+• View field types
+• Copy API names
+• Detect parent-child relationships
+
+---
+
+MODULE 3 — RELATIONSHIP ENGINE
+
+Build a metadata parser that identifies:
+
+Parent → Child relationships
+Child → Parent relationships
+
+Example relationships:
+
+Account → Contacts
+Account → Opportunities
+Contact → Account
+
+Generate valid SOQL queries automatically.
+
+Examples:
+
+Parent to child:
+
+SELECT Id,
+(SELECT Id, LastName FROM Contacts)
+FROM Account
+
+Child to parent:
+
+SELECT Id, Account.Name
+FROM Contact
+
+---
+
+MODULE 4 — VISUAL SOQL QUERY BUILDER
+
+Provide an interactive UI where users can:
+
+• Select object
+• Select fields
+• Select relationships
+• Add filters
+• Add order by
+• Add limits
+
+Automatically generate SOQL.
+
+Provide live preview of query.
+
+---
+
+MODULE 5 — AUTO FIELD SUGGESTION
+
+When typing queries:
+
+Provide autocomplete suggestions for:
+
+• Objects
+• Fields
+• Relationships
+• SOQL keywords
+
+Example suggestions:
+
+SELECT
+Id
+Name
+Industry
+AnnualRevenue
+OwnerId
+
+---
+
+MODULE 6 — QUERY RUNNER
+
+Allow users to run SOQL queries directly from the extension.
+
+Endpoint:
+
+/services/data/vXX.X/query
+
+Display results in a tabular UI.
+
+Capabilities:
+
+• Pagination
+• Export CSV
+• Copy JSON
+• View raw API response
+
+---
+
+MODULE 7 — DATA LOADER
+
+Provide bulk data operations.
+
+Capabilities:
+
+• Insert records
+• Update records
+• Upsert records
+• Delete records
+• Import CSV files
+• Export data
+
+Must support bulk operations across multiple objects.
+
+---
+
+MODULE 8 — ORG COMPARATOR
+
+Compare metadata between two orgs.
+
+Example comparisons:
+
+Sandbox vs Production.
+
+Compare:
+
+• Objects
+• Fields
+• Picklists
+• Apex classes
+• Profiles
+• Permission sets
+
+Display differences clearly.
+
+---
+
+MODULE 9 — PACKAGE.XML GENERATOR
+
+Generate package.xml automatically.
+
+Capabilities:
+
+• Select metadata types
+• Generate deployment manifest
+• Copy package.xml
+• Export package.xml
+
+---
+
+MODULE 10 — SCHEMA GRAPH VIEWER
+
+Build a visual schema viewer.
+
+Display object relationships in a graph.
+
+Example:
+
+Account
+├ Contacts
+├ Opportunities
+└ Cases
+
+Clickable nodes.
+
+Clicking a relationship should generate the corresponding SOQL query.
+
+---
+
+MODULE 11 — AI SOQL GENERATOR
+
+Integrate an AI assistant.
+
+Use OpenAI or similar AI API.
+
+Users can type natural language:
+
+"Show accounts with contacts created this month"
+
+AI converts it to SOQL.
+
+---
+
+MODULE 12 — APEX DEBUG HELPER
+
+Allow users to paste Apex errors.
+
+Example:
+
+System.NullPointerException
+
+The AI system explains:
+
+• Cause
+• Possible fixes
+• Related code examples
+
+---
+
+EXTENSION ARCHITECTURE
+
+Design the extension with the following structure:
+
+manifest.json
+background.js
+popup.html
+popup.js
+content_scripts
+api layer
+UI components
+
+---
+
+TECH STACK
+
+Frontend:
+
+React
+TypeScript
+TailwindCSS
+
+Extension APIs:
+
+Chrome Extension API (Manifest V3)
+
+Backend integrations:
+
+Salesforce REST API
+Salesforce Metadata API
+Salesforce Tooling API
+
+Optional AI:
+
+OpenAI API
+
+---
+
+UI/UX DESIGN
+
+Provide a professional developer interface.
+
+Include:
+
+Tabbed navigation
+
+Tabs:
+
+• SOQL Builder
+• Metadata Explorer
+• Data Loader
+• Org Compare
+• Schema Viewer
+• AI Assistant
+
+---
+
+PERFORMANCE REQUIREMENTS
+
+• Cache metadata locally
+• Minimize API calls
+• Use asynchronous processing
+• Handle large query results efficiently
+
+---
+
+SECURITY REQUIREMENTS
+
+• Secure token storage
+• No sensitive data logging
+• Support secure OAuth flows
+
+---
+
+DELIVERABLES
+
+Generate the following:
+
+1. Full architecture diagram
+2. Complete folder structure
+3. API integration strategy
+4. Relationship engine algorithm
+5. Metadata caching strategy
+6. Query autocomplete system
+7. UI layout for extension popup
+8. Development roadmap
+9. Chrome extension manifest
+10. Sample code snippets
+
+The solution must be production-grade and scalable.
+
+---
+
+✅ **Tip:** If you paste this prompt into an AI coding system, it will usually generate **an entire architecture and codebase outline** for your extension.
+
+---
+
+If you want, I can also show you:
+
+* **How to build this extension in 7–10 days step-by-step**
+* **The exact architecture FuseKit likely uses internally**
+* **How to turn this extension into a SaaS product for Salesforce developers**.
