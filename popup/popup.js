@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSettings();
     initQuickActions();
     await loadInitialState();
+    await applyOpenContext();
 });
 
 // ============================================
@@ -443,6 +444,32 @@ async function loadRecentQueries() {
             switchTab('query-runner');
         });
     });
+}
+
+// ============================================
+// Deep link from content script / background
+// ============================================
+
+async function applyOpenContext() {
+    try {
+        const context = await Storage.get('sf_open_context');
+        if (!context) return;
+
+        // One-shot; don't re-apply on the next popup open.
+        await Storage.remove('sf_open_context');
+
+        if (context.tab) {
+            switchTab(context.tab);
+        }
+
+        if (context.tab === 'soql-builder' && context.object && window.SOQLBuilder?.selectObject) {
+            window.SOQLBuilder.selectObject(context.object);
+        } else if (context.tab === 'metadata-explorer' && context.object && window.MetadataExplorer?.loadObjectDetail) {
+            window.MetadataExplorer.loadObjectDetail(context.object);
+        }
+    } catch (e) {
+        console.log('Open context skipped:', e.message);
+    }
 }
 
 // ============================================

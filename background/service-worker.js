@@ -112,6 +112,8 @@ async function handleMessage(message, sender) {
             return await handleSessionLogin(message.instanceUrl, message.accessToken, message.orgType);
         case 'connectFromTab':
             return await handleConnectFromTab();
+        case 'openPopup':
+            return await handleOpenPopup(message);
         case 'logout':
             return await handleLogout(message.orgId);
         case 'getActiveOrg':
@@ -483,6 +485,37 @@ async function handleConnectFromTab() {
         }
         throw new Error('Failed to connect from tab. Please try Quick Connect instead.');
     }
+}
+
+// =====================================================================
+// Deep link from content script -> open UI
+// =====================================================================
+
+async function handleOpenPopup(message) {
+    const context = {
+        tab: message.tab || null,
+        object: message.object || null,
+        createdAt: Date.now()
+    };
+
+    // Store the intent so popup.html can navigate on load.
+    await chrome.storage.local.set({ sf_open_context: context });
+
+    const uiUrl = chrome.runtime.getURL('popup/popup.html');
+
+    // If popup.html is already open in a tab, reuse it; otherwise create a new tab.
+    const existing = await chrome.tabs.query({ url: uiUrl + '*' });
+    if (existing.length > 0) {
+        const target = existing[0];
+        try {
+            await chrome.windows.update(target.windowId, { focused: true });
+        } catch { }
+        await chrome.tabs.update(target.id, { url: uiUrl, active: true });
+    } else {
+        await chrome.tabs.create({ url: uiUrl, active: true });
+    }
+
+    return { success: true };
 }
 
 // =====================================================================

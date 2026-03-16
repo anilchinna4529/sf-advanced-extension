@@ -37,7 +37,8 @@
       "matches": [
         "https://*.salesforce.com/*",
         "https://*.force.com/*",
-        "https://*.lightning.force.com/*"
+        "https://*.lightning.force.com/*",
+        "https://*.my.salesforce.com/*"
       ],
       "js": [
         "content/content-script.js"

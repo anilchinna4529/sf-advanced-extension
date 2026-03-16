@@ -15,6 +15,9 @@ const SOQLBuilder = {
         const objectSearch = document.getElementById('soql-object-search');
         const objectDropdown = document.getElementById('soql-object-dropdown');
         const fieldSearch = document.getElementById('soql-field-search');
+        const orderBySelect = document.getElementById('soql-orderby');
+        const orderDirSelect = document.getElementById('soql-order-dir');
+        const limitInput = document.getElementById('soql-limit');
 
         // Object search
         objectSearch.addEventListener('input', (e) => this.searchObjects(e.target.value));
@@ -46,6 +49,11 @@ const SOQLBuilder = {
             // Trigger execute
             setTimeout(() => document.getElementById('btn-execute-query').click(), 100);
         });
+
+        // Query options (bind once; options list is re-rendered per object)
+        orderBySelect?.addEventListener('change', () => this.updateQuery());
+        orderDirSelect?.addEventListener('change', () => this.updateQuery());
+        limitInput?.addEventListener('input', () => this.updateQuery());
 
         // Load objects when tab activates
         document.addEventListener('tabActivated', (e) => {
@@ -250,10 +258,6 @@ const SOQLBuilder = {
             fields.filter(f => f.sortable).map(f =>
                 `<option value="${f.name}">${f.name}</option>`
             ).join('');
-
-        select.addEventListener('change', () => this.updateQuery());
-        document.getElementById('soql-order-dir').addEventListener('change', () => this.updateQuery());
-        document.getElementById('soql-limit').addEventListener('input', () => this.updateQuery());
     },
 
     addFilter() {

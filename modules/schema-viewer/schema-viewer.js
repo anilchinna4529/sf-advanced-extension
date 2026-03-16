@@ -154,30 +154,32 @@ const SchemaViewer = {
     },
 
     makeDraggable(element, container) {
-        let isDragging = false;
-        let startX, startY, startLeft, startTop;
-
         element.addEventListener('mousedown', (e) => {
             if (e.target.closest('.schema-field')) return; // Don't drag when clicking fields
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(element.style.left) || 0;
-            startTop = parseInt(element.style.top) || 0;
+            e.preventDefault();
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startLeft = parseInt(element.style.left) || 0;
+            const startTop = parseInt(element.style.top) || 0;
+
             element.style.zIndex = '10';
-        });
 
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            element.style.left = `${startLeft + dx}px`;
-            element.style.top = `${startTop + dy}px`;
-        });
+            const onMouseMove = (ev) => {
+                const dx = ev.clientX - startX;
+                const dy = ev.clientY - startY;
+                element.style.left = `${startLeft + dx}px`;
+                element.style.top = `${startTop + dy}px`;
+            };
 
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            element.style.zIndex = '';
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                element.style.zIndex = '';
+            };
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         });
     },
 
