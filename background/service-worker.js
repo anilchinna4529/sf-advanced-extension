@@ -22,6 +22,79 @@ const DEFAULT_CLIENT_ID = '3MVG9YOUR_CONNECTED_APP_CLIENT_ID';
 const OAUTH_SCOPES = 'api refresh_token web id';
 const API_VERSION = 'v62.0'; // Latest API version (Spring '25)
 
+// ========== Salesforce URL Normalization ==========
+
+/**
+ * Convert Salesforce UI hostnames (Lightning/Visualforce) to an API-capable base hostname.
+ * Example: mydomain.lightning.force.com -> mydomain.my.salesforce.com
+ *          mydomain--sandbox.lightning.force.com -> mydomain--sandbox.my.salesforce.com
+ */
+function normalizeSalesforceHostnameForApi(hostname) {
+    if (!hostname) return hostname;
+
+    const lower = hostname.toLowerCase();
+
+    if (lower.endsWith('.lightning.force.com')) {
+        return hostname.slice(0, -'.lightning.force.com'.length) + '.my.salesforce.com';
+    }
+
+    // Visualforce hosts often end with "--c.visual.force.com"; map to the core org domain.
+    if (lower.endsWith('.visual.force.com')) {
+        let prefix = hostname.slice(0, -'.visual.force.com'.length);
+        prefix = prefix.replace(/--[cCpP]$/, '');
+        return prefix + '.my.salesforce.com';
+    }
+
+    // Optionally map bare Experience Cloud host "<mydomain>.force.com" to "<mydomain>.my.salesforce.com".
+    if (lower.endsWith('.force.com')) {
+        const parts = hostname.split('.');
+        if (parts.length === 3 && parts[0]) {
+            return parts[0] + '.my.salesforce.com';
+        }
+    }
+
+    return hostname;
+}
+
+/**
+ * Normalize a user/tab-provided Salesforce URL to a base instance URL suitable for REST API calls.
+ * - Accepts host-only, origin, or full URLs with paths.
+ * - Ensures https and strips any path/query.
+ */
+function normalizeSalesforceInstanceUrl(input) {
+    if (!input) return input;
+
+    let value = String(input).trim();
+    if (!value) return value;
+
+    // Strip trailing slashes; keep potential path for URL parsing below.
+    value = value.replace(/\/+$/, '');
+    if (!/^https?:\/\//i.test(value)) {
+        value = 'https://' + value;
+    }
+
+    try {
+        const parsed = new URL(value);
+        const apiHost = normalizeSalesforceHostnameForApi(parsed.hostname);
+        return `https://${apiHost}`;
+    } catch {
+        // Best-effort fallback: don't block login due to a parsing failure.
+        return value;
+    }
+}
+
+function isSalesforceTabUrl(urlString) {
+    if (!urlString) return false;
+    try {
+        const url = new URL(urlString);
+        if (url.protocol !== 'https:') return false;
+        const host = url.hostname.toLowerCase();
+        return host.endsWith('.salesforce.com') || host.endsWith('.force.com');
+    } catch {
+        return false;
+    }
+}
+
 // ========== Message Router ==========
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -293,11 +366,8 @@ async function handleSessionLogin(instanceUrl, accessToken, orgType) {
         throw new Error('Instance URL and Access Token are required');
     }
 
-    // Clean up the instance URL
-    instanceUrl = instanceUrl.replace(/\/+$/, '');
-    if (!instanceUrl.startsWith('https://')) {
-        instanceUrl = 'https://' + instanceUrl;
-    }
+    const originalInstanceUrl = instanceUrl;
+    instanceUrl = normalizeSalesforceInstanceUrl(instanceUrl);
 
     // Verify the token works by getting user info
     try {
@@ -311,7 +381,11 @@ async function handleSessionLogin(instanceUrl, accessToken, orgType) {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
             });
             if (!versionResponse.ok) {
-                throw new Error(`Invalid credentials. HTTP ${identityResponse.status}`);
+                let hint = '';
+                if (String(originalInstanceUrl).toLowerCase().includes('.lightning.force.com')) {
+                    hint = ' Tip: use your API domain like https://<mydomain>.my.salesforce.com (not *.lightning.force.com).';
+                }
+                throw new Error(`Invalid credentials or wrong instance URL. HTTP ${versionResponse.status}.${hint}`);
             }
             // Token works but userinfo may not be available
             const orgData = {
@@ -367,32 +441,42 @@ async function handleSessionLogin(instanceUrl, accessToken, orgType) {
 
 async function handleConnectFromTab() {
     try {
-        const tabs = await chrome.tabs.query({
-            url: [
-                'https://*.salesforce.com/*',
-                'https://*.force.com/*',
-                'https://*.lightning.force.com/*',
-                'https://*.my.salesforce.com/*'
-            ]
-        });
+        // Prefer the currently active tab if it's a Salesforce tab.
+        const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        let tab = activeTabs && activeTabs[0];
 
-        if (tabs.length === 0) {
-            throw new Error('No Salesforce tab found. Please open Salesforce in a tab first.');
+        if (!tab || !isSalesforceTabUrl(tab.url)) {
+            const tabs = await chrome.tabs.query({
+                url: [
+                    'https://*.salesforce.com/*',
+                    'https://*.force.com/*',
+                    'https://*.lightning.force.com/*',
+                    'https://*.my.salesforce.com/*'
+                ]
+            });
+
+            if (tabs.length === 0) {
+                throw new Error('No Salesforce tab found. Please open Salesforce in a tab first.');
+            }
+
+            tab = tabs[0];
         }
 
-        const tab = tabs[0];
         const url = new URL(tab.url);
-        const instanceUrl = `${url.protocol}//${url.hostname}`;
+        const tabOrigin = `${url.protocol}//${url.hostname}`;
+        const apiInstanceUrl = normalizeSalesforceInstanceUrl(tabOrigin);
 
-        // Try to get the session ID from cookies
-        const cookies = await chrome.cookies.getAll({ domain: url.hostname });
-        const sidCookie = cookies.find(c => c.name === 'sid');
+        // Try to get the session ID from cookies (prefer API domain, fallback to tab origin)
+        let sidCookie = await chrome.cookies.get({ url: `${apiInstanceUrl}/`, name: 'sid' });
+        if (!sidCookie) {
+            sidCookie = await chrome.cookies.get({ url: `${tabOrigin}/`, name: 'sid' });
+        }
 
         if (!sidCookie) {
             throw new Error('Could not find Salesforce session. Please log into Salesforce in a tab first, then try again.');
         }
 
-        return await handleSessionLogin(instanceUrl, sidCookie.value, 'Session');
+        return await handleSessionLogin(apiInstanceUrl, sidCookie.value, 'Session');
     } catch (error) {
         if (error.message.includes('No Salesforce tab') || error.message.includes('Could not find')) {
             throw error;
